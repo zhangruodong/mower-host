@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>mower_bridge</name>
+  <version>0.1.0</version>
+  <description>割草机底盘串口桥：收发全包，mower-host 独占这个串口</description>
+  <maintainer email="todo@example.com">mower</maintainer>
+  <license>Proprietary</license>
+
+  <depend>rclpy</depend>
+  <depend>nav_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>std_msgs</depend>
+  <!-- pyserial 的 rosdep 键名。setup.py 里的 install_requires 只管 pip，
+       rosdep install 认的是这一行。 -->
+  <exec_depend>python3-serial</exec_depend>
+
+  <!-- 没挂 ament_copyright / flake8 / pep257：我们不加版权头，注释也全中文，
+       挂上去只会让 colcon test 一路红。 -->
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

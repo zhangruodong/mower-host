@@ -1,0 +1,14 @@
+# colcon 产物 —— 每次 build 都重新生成，别传
+bridge/build/
+bridge/install/
+bridge/log/
+
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# 编辑器 / 系统垃圾
+.vscode/
+.idea/
+*.swp
+.DS_Store
