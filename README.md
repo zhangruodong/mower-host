@@ -25,7 +25,7 @@
 
 **硬件**：底盘（STM32F407 + 驱动板）、RPLidar C1、USB 转串口（CH340，`1a86:55d4`）。
 
-收发由 `bridge/` 里的 `chassis_bridge` 包了，底盘原来那套节点一个都不用装（原因见 [docs/架构.md](docs/架构.md)）。唯一留下来复用的是 `ekf.yaml`（纯配置）。
+串口收发由 `bridge/` 里的 `chassis_bridge` 包了——装上它就能控制底盘。
 
 需要装的是 ROS2 Humble + `robot_localization`（出 `/odom_combined` 和 TF）+ `slam_toolbox` / Nav2（要建图导航才装）。
 
