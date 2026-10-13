@@ -11,8 +11,17 @@ echo "目录: $HERE"
 echo "[1/4] 检查依赖..."
 if ! python3 -c "import serial; import cv2; import pyqtgraph; from PyQt5.QtWidgets import QWidget" 2>/dev/null; then
     echo "安装依赖包..."
-    sudo apt install python3-pyqt5 -y
-    pip3 install pyserial opencv-contrib-python-headless pyqtgraph numpy rplidar Pillow --break-system-packages -i https://pypi.tuna.tsinghua.edu.cn/simple
+    # usbutils 是 core/hw_detector.py 调 lsusb 用的，最小化的 jammy 上没有。
+    sudo apt install python3-pyqt5 usbutils -y
+    # --break-system-packages 要 pip >= 23.0.1：Bookworm 有，Ubuntu 22.04 的 22.0.2 不认这个选项，
+    # 而本脚本是 set -e，写死会让它在 jammy 上当场死在这一行。按能力探测。
+    PIP_EXTRA=""
+    if pip3 install --help 2>/dev/null | grep -q -- '--break-system-packages'; then
+        PIP_EXTRA="--break-system-packages"
+    fi
+    # opencv 必须走 pip，不能换成 apt 的 python3-opencv：jammy 那份是 4.5.4，
+    # 而 core/tag_detector.py 用的是 >= 4.7 的新 aruco API（cv2.aruco.ArucoDetector）。
+    pip3 install pyserial opencv-contrib-python-headless pyqtgraph numpy $PIP_EXTRA -i https://pypi.tuna.tsinghua.edu.cn/simple
 fi
 
 # 2. 配置 udev 设备别名
@@ -29,14 +38,21 @@ echo "[3/4] 检测设备..."
 
 # 4. 桌面图标
 # 原来写死 /home/$USER/robot_ui，目录实际叫 mower-host —— 那个图标一直是坏的。
+# 桌面目录按 xdg-user-dir 取：中文 locale 的 Ubuntu 上它叫 ~/桌面，写死 ~/Desktop 会落进一个不存在的目录。
 echo "[4/4] 桌面图标..."
-cat > ~/Desktop/割草机控制面板.sh << DESK
+DESKTOP_DIR="$(xdg-user-dir DESKTOP 2>/dev/null || echo "$HOME/Desktop")"
+mkdir -p "$DESKTOP_DIR"
+cat > "$DESKTOP_DIR/割草机控制面板.sh" << DESK
 #!/bin/bash
 export DISPLAY=:0
+# 必须 source ROS：main_window.py 的 ROS_SETUP 只 source 工作空间，从不 source 发行版，
+# 少了这两句所有 ros2/rviz2 子进程都是 command not found，而界面一声不吭。
+source /opt/ros/humble/setup.bash
+[ -f "$HERE/bridge/install/setup.bash" ] && source "$HERE/bridge/install/setup.bash"
 cd "$HERE"
 python3 main.py
 DESK
-chmod +x ~/Desktop/割草机控制面板.sh
+chmod +x "$DESKTOP_DIR/割草机控制面板.sh"
 
 echo "=== 配置完成 ==="
 echo
